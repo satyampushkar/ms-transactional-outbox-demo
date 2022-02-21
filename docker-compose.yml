@@ -1,0 +1,48 @@
+version: '3.4'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    hostname: "rabbitmq"
+    labels:
+      NAME: "rabbitmq"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  sql-server-db:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    hostname: "sql-server-db"
+    labels:
+      NAME: "sql-server-db"
+    ports:
+      - "1433:1433"
+    environment:
+      SA_PASSWORD: "Password123"
+      ACCEPT_EULA: "Y"
+
+  order-service:
+    build:
+      context: .
+      dockerfile: order.microservice/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports: 
+      - "3001:80"
+      - "3031:443"
+    restart: on-failure:15 # always
+    depends_on:
+      - "rabbitmq"
+
+  notifier-service:
+    build:
+      context: .
+      dockerfile: notifier.microservice/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports: 
+      - "3002:80"
+      - "3032:443"  
+    restart: on-failure:15 # always
+    depends_on:
+      - "rabbitmq"
