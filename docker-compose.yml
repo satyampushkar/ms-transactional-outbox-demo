@@ -33,6 +33,7 @@ services:
     restart: on-failure:15 # always
     depends_on:
       - "rabbitmq"
+      - "sql-server-db"
 
   notifier-service:
     build:
